@@ -1,1 +1,73 @@
-
+{
+  "tags": {
+    "SALES": {
+      "keywords": [
+        "buy",
+        "purchase",
+        "price",
+        "pricing",
+        "cost",
+        "demo",
+        "trial",
+        "product",
+        "upgrade",
+        "plan",
+        "subscribe",
+        "interested",
+        "quote",
+        "proposal"
+      ]
+    },
+    "SUPPORT": {
+      "keywords": [
+        "help",
+        "issue",
+        "problem",
+        "broken",
+        "error",
+        "not working",
+        "bug",
+        "fix",
+        "support",
+        "troubleshoot",
+        "crash",
+        "down",
+        "fail",
+        "unable"
+      ]
+    },
+    "BILLING": {
+      "keywords": [
+        "invoice",
+        "payment",
+        "charge",
+        "charged",
+        "refund",
+        "subscription",
+        "bill",
+        "billing",
+        "card",
+        "transaction",
+        "receipt",
+        "cancel",
+        "renew",
+        "upgrade billing"
+      ]
+    },
+    "OTHER": {
+      "keywords": [
+        "question",
+        "info",
+        "information",
+        "general",
+        "inquiry",
+        "about",
+        "tell me",
+        "when",
+        "where",
+        "how",
+        "what"
+      ]
+    }
+  }
+}
