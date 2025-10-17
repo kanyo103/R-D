@@ -1,219 +1,129 @@
 """
-Main Application Runner
-Command-line interface for the Intelligent Chat Message Tagger.
+Intelligent Chat Message Tagger - Main Application
+
+This is the main entry point for the Chat Message Tagger POC.
+It provides a command-line interface for users to input messages
+and receive tag suggestions.
 """
 
 import sys
 from config_loader import ConfigurationLoader
 from tagger_service import TaggerService
-from scoring_strategy import KeywordFrequencyScorer
 
 
-class MessageTaggerApp:
+class ApplicationRunner:
     """
-    Main application class that orchestrates the tagging process.
-    Handles CLI interaction and coordinates between components.
+    Main application runner that orchestrates the tagging workflow.
+    
+    This class ties together the configuration loading and tagging service
+    to provide an interactive command-line interface.
     """
-
-    def __init__(self, config_path: str = "tag_config.json"):
-        """
-        Initialize the application.
-        
-        Args:
-            config_path: Path to configuration file
-        """
-        self.config_path = config_path
+    
+    def __init__(self):
+        """Initialize the application."""
         self.config_loader = None
         self.tagger_service = None
-
+        
     def initialize(self) -> bool:
         """
-        Initialize all components and load configuration.
+        Initialize the application by loading configuration.
         
         Returns:
-            True if initialization successful, False otherwise
+            True if initialization succeeds, False otherwise
         """
         try:
-            print("🚀 Initializing Intelligent Chat Message Tagger...")
-            print(f"📁 Loading configuration from: {self.config_path}")
+            print("Initializing Intelligent Chat Message Tagger...")
             
-            # Load configuration
-            self.config_loader = ConfigurationLoader(self.config_path)
-            tag_config = self.config_loader.load_config()
+            self.config_loader = ConfigurationLoader()
+            self.config_loader.load_configuration()
             
-            # Validate configuration
-            if not self.config_loader.validate_config():
-                print("❌ Configuration validation failed!")
-                return False
+            tags_config = self.config_loader.get_tags_config()
+            self.tagger_service = TaggerService(tags_config)
             
-            # Initialize tagger service with keyword frequency scorer
-            scoring_strategy = KeywordFrequencyScorer()
-            self.tagger_service = TaggerService(tag_config, scoring_strategy)
-            
-            # Display loaded tags
-            tags = self.config_loader.get_tags()
-            print(f"✅ Configuration loaded successfully!")
-            print(f"📋 Available tags: {', '.join(tags)}\n")
+            available_tags = self.config_loader.get_available_tags()
+            print(f"Loaded {len(available_tags)} tags: {', '.join(available_tags)}")
+            print()
             
             return True
             
         except FileNotFoundError as e:
-            print(f"❌ Error: {str(e)}")
-            return False
-        except ValueError as e:
-            print(f"❌ Configuration Error: {str(e)}")
+            print(f"Error: {e}")
             return False
         except Exception as e:
-            print(f"❌ Unexpected Error: {str(e)}")
+            print(f"Error initializing application: {e}")
             return False
-
-    def run(self) -> None:
+    
+    def run_interactive(self) -> None:
         """
-        Run the main application loop.
-        Continuously prompts user for messages and displays tag predictions.
-        """
-        print("=" * 60)
-        print("  INTELLIGENT CHAT MESSAGE TAGGER")
-        print("=" * 60)
-        print("\nEnter customer messages to get tag suggestions.")
-        print("Type 'quit', 'exit', or press Ctrl+C to stop.\n")
+        Run the interactive command-line interface.
         
-        try:
-            while True:
-                # Get user input
-                message = input("💬 Enter message: ").strip()
+        Prompts the user to enter messages and displays tag suggestions.
+        """
+        print("=" * 60)
+        print("WELCOME TO MY INTELLIGENT CHAT MESSAGE TAGGER")
+        print("=" * 60)
+        print()
+        print("Enter a customer message to analyze.")
+        print("HERE ARE SOME EXAMPLE MESSAGES YOU CAN TRY:")
+        print("*" * 60)
+        print("- I need help with my order.")
+        print("- Can you asssit me with a technical issue?")
+        print("- I'm looking for information on my account.")
+        print("*" * 60)
+        print("Type 'quit' or 'exit' to stop.")
+        print()
+        
+        while True:
+            try:
+                message = input("Enter message: ").strip()
                 
-                # Check for exit commands
                 if message.lower() in ['quit', 'exit', 'q']:
-                    print("\n👋 Thank you for using the Message Tagger. Goodbye!")
+                    print("\nThank you for using the Chat Message Tagger!")
                     break
                 
-                # Skip empty messages
                 if not message:
-                    print("⚠️  Please enter a message.\n")
+                    print("Please enter a valid message.\n")
                     continue
                 
-                # Analyze message
-                self._process_message(message)
-                print()  # Blank line for readability
+                if self.tagger_service is None:
+                    print("Error: Tagger service not initialized.\n")
+                    continue
                 
-        except KeyboardInterrupt:
-            print("\n\n👋 Application terminated by user. Goodbye!")
-        except Exception as e:
-            print(f"\n❌ Error: {str(e)}")
-
-    def _process_message(self, message: str) -> None:
+                primary_tag, secondary_tag = self.tagger_service.analyze_message(message)
+                
+                print()
+                print("-" * 60)
+                print(f"Primary Tag:   {primary_tag}")
+                print(f"Secondary Tag: {secondary_tag}")
+                print("-" * 60)
+                print()
+                
+            except KeyboardInterrupt:
+                print("\n\nInterrupted by user. Exiting...")
+                break
+            except EOFError:
+                print("\n\nEnd of input. Exiting...")
+                break
+    
+    def run(self) -> int:
         """
-        Process a single message and display results.
+        Main run method for the application.
         
-        Args:
-            message: The message to analyze
+        Returns:
+            Exit code (0 for success, 1 for failure)
         """
-        try:
-            # Get tag predictions
-            primary_tag, secondary_tag = self.tagger_service.analyze_message(message)
-            
-            # Display results
-            print("\n" + "-" * 60)
-            print("📊 ANALYSIS RESULTS")
-            print("-" * 60)
-            print(f"🥇 Primary Tag:   {primary_tag}")
-            
-            if secondary_tag:
-                print(f"🥈 Secondary Tag: {secondary_tag}")
-            else:
-                print(f"🥈 Secondary Tag: None (only one relevant tag found)")
-            
-            print("-" * 60)
-            
-        except Exception as e:
-            print(f"❌ Error processing message: {str(e)}")
-
-    def run_test_cases(self) -> None:
-        """
-        Run predefined test cases to demonstrate functionality.
-        Useful for acceptance criteria validation.
-        """
-        print("\n" + "=" * 60)
-        print("  RUNNING ACCEPTANCE TEST CASES")
-        print("=" * 60 + "\n")
+        if not self.initialize():
+            return 1
         
-        test_cases = [
-            {
-                'message': "I want to buy your product and see pricing",
-                'expected_primary': "SALES",
-                'expected_secondary': "OTHER"
-            },
-            {
-                'message': "My account is broken and I need help now",
-                'expected_primary': "SUPPORT",
-                'expected_secondary': "OTHER"
-            },
-            {
-                'message': "Why was I charged twice on my invoice?",
-                'expected_primary': "BILLING",
-                'expected_secondary': "OTHER"
-            }
-        ]
-        
-        passed = 0
-        failed = 0
-        
-        for i, test_case in enumerate(test_cases, 1):
-            message = test_case['message']
-            expected_primary = test_case['expected_primary']
-            expected_secondary = test_case.get('expected_secondary')
-            
-            print(f"Test Case #{i}")
-            print(f"Message: \"{message}\"")
-            
-            primary, secondary = self.tagger_service.analyze_message(message)
-            
-            print(f"Expected: Primary={expected_primary}, Secondary={expected_secondary}")
-            print(f"Actual:   Primary={primary}, Secondary={secondary}")
-            
-            # Check results
-            primary_match = primary == expected_primary
-            secondary_match = (secondary == expected_secondary) if expected_secondary else True
-            
-            if primary_match and secondary_match:
-                print("✅ PASSED")
-                passed += 1
-            else:
-                print("❌ FAILED")
-                failed += 1
-            
-            print("-" * 60 + "\n")
-        
-        print(f"Results: {passed} passed, {failed} failed out of {len(test_cases)} tests\n")
+        self.run_interactive()
+        return 0
 
 
 def main():
-    """
-    Application entry point.
-    """
-    # Check for command line arguments
-    config_path = "tag_config.json"
-    test_mode = False
-    
-    if len(sys.argv) > 1:
-        if sys.argv[1] == '--test':
-            test_mode = True
-        else:
-            config_path = sys.argv[1]
-    
-    # Create and initialize application
-    app = MessageTaggerApp(config_path)
-    
-    if not app.initialize():
-        print("\n❌ Application failed to initialize. Exiting.")
-        sys.exit(1)
-    
-    # Run in test mode or interactive mode
-    if test_mode:
-        app.run_test_cases()
-    else:
-        app.run()
+    """Main entry point."""
+    app = ApplicationRunner()
+    exit_code = app.run()
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
