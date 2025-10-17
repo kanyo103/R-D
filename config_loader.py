@@ -1,116 +1,87 @@
 """
-Configuration Loader Module
-Handles loading and validation of tag configuration from JSON file.
+ConfigurationLoader Module
+
+This module handles loading and parsing the tag configuration from a JSON file.
 """
 
 import json
 from typing import Dict, List
-from pathlib import Path
 
 
 class ConfigurationLoader:
     """
-    Responsible for loading and validating tag configuration data.
-    Follows Single Responsibility Principle - only handles config operations.
+    Loads and manages tag configuration from a JSON file.
+    
+    The configuration file should contain a 'tags' object where each key is a tag name
+    and the value is an object with a 'keywords' array.
     """
-
-    def __init__(self, config_path: str = "tag_config.json"):
+    
+    def __init__(self, config_path: str = None):
         """
-        Initialize the configuration loader.
+        Initialize the ConfigurationLoader.
         
         Args:
             config_path: Path to the configuration JSON file
         """
-        self.config_path = config_path
-        self.config_data = None
-
-    def load_config(self) -> Dict[str, List[str]]:
+        # If not provided, resolve path relative to this file so the
+        # configuration can be loaded regardless of the current working directory.
+        if config_path:
+            self.config_path = config_path
+        else:
+            import os
+            base_dir = os.path.dirname(__file__)
+            self.config_path = os.path.join(base_dir, 'tag_config.json')
+        self.tags_config: Dict[str, List[str]] = {}
+        
+    def load_configuration(self) -> None:
         """
         Load and parse the configuration file.
         
-        Returns:
-            Dictionary mapping tag names to keyword lists
-            
         Raises:
-            FileNotFoundError: If config file doesn't exist
-            ValueError: If config format is invalid
+            FileNotFoundError: If the configuration file doesn't exist
+            json.JSONDecodeError: If the configuration file is not valid JSON
+            KeyError: If the configuration structure is invalid
         """
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # Validate and extract tags
-            if 'tags' not in data:
-                raise ValueError("Configuration must contain 'tags' key")
-            
-            self.config_data = {}
-            for tag_name, tag_info in data['tags'].items():
-                if 'keywords' not in tag_info:
-                    raise ValueError(f"Tag '{tag_name}' missing 'keywords' field")
+            with open(self.config_path, 'r') as file:
+                config_data = json.load(file)
                 
-                # Normalize keywords to lowercase for case-insensitive matching
-                keywords = [kw.lower() for kw in tag_info['keywords']]
-                self.config_data[tag_name] = keywords
+            if 'tags' not in config_data:
+                raise KeyError("Configuration must contain a 'tags' object")
             
-            if not self.config_data:
-                raise ValueError("Configuration must contain at least one tag")
-            
-            return self.config_data
-            
+            for tag_name, tag_data in config_data['tags'].items():
+                if 'keywords' not in tag_data:
+                    raise KeyError(f"Tag '{tag_name}' must contain a 'keywords' array")
+                
+                self.tags_config[tag_name] = [
+                    keyword.lower() for keyword in tag_data['keywords']
+                ]
+                
         except FileNotFoundError:
             raise FileNotFoundError(
-                f"Configuration file not found: {self.config_path}\n"
-                f"Please ensure tag_config.json exists in the current directory."
+                f"Configuration file not found: {self.config_path}"
             )
         except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format in config file: {str(e)}")
-
-    def get_tags(self) -> List[str]:
+            raise json.JSONDecodeError(
+                f"Invalid JSON in configuration file: {str(e)}",
+                e.doc,
+                e.pos
+            )
+    
+    def get_tags_config(self) -> Dict[str, List[str]]:
         """
-        Get list of all available tags.
+        Get the loaded tags configuration.
+        
+        Returns:
+            Dictionary mapping tag names to their associated keywords
+        """
+        return self.tags_config
+    
+    def get_available_tags(self) -> List[str]:
+        """
+        Get a list of all available tag names.
         
         Returns:
             List of tag names
         """
-        if self.config_data is None:
-            raise RuntimeError("Configuration not loaded. Call load_config() first.")
-        return list(self.config_data.keys())
-
-    def get_keywords(self, tag: str) -> List[str]:
-        """
-        Get keywords for a specific tag.
-        
-        Args:
-            tag: Tag name
-            
-        Returns:
-            List of keywords for the tag
-        """
-        if self.config_data is None:
-            raise RuntimeError("Configuration not loaded. Call load_config() first.")
-        
-        if tag not in self.config_data:
-            raise KeyError(f"Tag '{tag}' not found in configuration")
-        
-        return self.config_data[tag]
-
-    def validate_config(self) -> bool:
-        """
-        Validate the loaded configuration.
-        
-        Returns:
-            True if configuration is valid
-        """
-        if self.config_data is None:
-            return False
-        
-        # Check for at least one tag
-        if len(self.config_data) == 0:
-            return False
-        
-        # Check each tag has at least one keyword
-        for tag, keywords in self.config_data.items():
-            if not keywords or len(keywords) == 0:
-                return False
-        
-        return True
+        return list(self.tags_config.keys())
