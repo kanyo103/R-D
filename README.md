@@ -1,435 +1,414 @@
 # Intelligent Chat Message Tagger POC
 
-A self-contained service that intelligently analyzes customer messages and assigns primary and secondary tags based on keyword matching and scoring algorithms.
+A command-line service that analyzes customer messages and assigns relevant tags based on keyword matching. This Proof of Concept (POC) demonstrates a simple, extensible tagging system using Object-Oriented Programming principles.
 
-## 📋 Table of Contents
+## Table of Contents
+
 - [Overview](#overview)
 - [Minimum Requirements](#minimum-requirements)
 - [Installation & Setup](#installation--setup)
 - [Usage](#usage)
-- [Architecture](#architecture)
-- [Acceptance Criteria](#acceptance-criteria)
+- [High-Level Implementation Details](#high-level-implementation-details)
+- [Acceptance Criteria & Test Cases](#acceptance-criteria--test-cases)
+- [Project Structure](#project-structure)
 - [Extensibility](#extensibility)
-- [Future Enhancements](#future-enhancements)
+- [License](#license)
 
----
+## Overview
 
-## 🎯 Overview
+The Intelligent Chat Message Tagger analyzes customer messages and automatically assigns a primary and secondary tag based on the content. The system uses a configurable keyword-matching algorithm to identify the most relevant tags for each message.
 
-This POC demonstrates a modular, extensible message tagging system that:
-- Loads tag configurations from a JSON file
-- Analyzes customer messages using keyword-based scoring
-- Returns the top 2 most relevant tags (Primary and Secondary)
-- Provides a simple command-line interface for interaction
+**Key Features:**
+- Data-driven configuration using JSON
+- Simple keyword frequency scoring algorithm
+- Modular OOP design for easy extension
+- Interactive command-line interface
+- Support for multiple tag categories (SALES, SUPPORT, BILLING, OTHER)
 
-**Use Case:** Automatically categorize customer support messages for routing to appropriate teams (Sales, Support, Billing, etc.)
+## Minimum Requirements
 
----
+To run this POC, you need:
 
-## ⚙️ Minimum Requirements
+- **Python 3.8 or higher**
+- **Standard Library Only** (no external dependencies required)
 
-### Software Requirements
-- **Python:** Version 3.8 or higher
-- **Operating System:** Windows, macOS, or Linux
-- **Dependencies:** None (uses Python standard library only)
+### Verifying Python Installation
 
-### Files Required
-- `main.py` - Application entry point
-- `config_loader.py` - Configuration loading module
-- `tagger_service.py` - Core tagging logic
-- `scoring_strategy.py` - Scoring algorithm implementations
-- `tag_config.json` - Tag and keyword configuration
-
----
-
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/intelligent-chat-tagger.git
-cd intelligent-chat-tagger
-```
-
-### 2. Verify Python Installation
 ```bash
 python --version
 # or
 python3 --version
 ```
 
-### 3. Verify Configuration File
-Ensure `tag_config.json` exists in the project root directory with the following structure:
-```json
-{
-  "tags": {
-    "SALES": {
-      "keywords": ["buy", "purchase", "price", "demo"]
-    },
-    "SUPPORT": {
-      "keywords": ["help", "issue", "broken", "error"]
-    }
-  }
-}
-```
+If Python is not installed, download it from [python.org](https://www.python.org/downloads/).
 
-### 4. Run the Application
+## Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd intelligent-chat-tagger
+   ```
+
+2. **Verify the configuration file exists:**
+   
+   The `tag_config.json` file contains the tag definitions and keywords. It should be present in the project root directory.
+
+3. **No additional installation needed** - the project uses only Python's standard library.
+
+## Usage
+
+### Running the Application
+
+Execute the main script from the command line:
+
 ```bash
 python main.py
+# or
+python3 main.py
 ```
-
----
-
-## 💻 Usage
 
 ### Interactive Mode
-Run the application and enter messages when prompted:
 
-```bash
-$ python main.py
+Once started, the application will:
+1. Load the tag configuration
+2. Display available tags
+3. Prompt you to enter a customer message
+4. Analyze the message and display the top 2 tags
 
-🚀 Initializing Intelligent Chat Message Tagger...
-📁 Loading configuration from: tag_config.json
-✅ Configuration loaded successfully!
-📋 Available tags: SALES, SUPPORT, BILLING, OTHER
+### Example Session
+
+```
+Initializing Intelligent Chat Message Tagger...
+Loaded 4 tags: SALES, SUPPORT, BILLING, OTHER
 
 ============================================================
-  INTELLIGENT CHAT MESSAGE TAGGER
+INTELLIGENT CHAT MESSAGE TAGGER
 ============================================================
 
-Enter customer messages to get tag suggestions.
-Type 'quit', 'exit', or press Ctrl+C to stop.
+Enter a customer message to analyze.
+HERE ARE SOME EXAMPLE MESSAGES YOU CAN TRY:
+************************************************************
+- I need help with my order.
+- Can you asssit me with a technical issue?
+- I'm looking for information on my account.
+************************************************************
+Type 'quit' or 'exit' to stop.
 
-💬 Enter message: I want to buy your product and see pricing
+Enter message: I'm interested in the enterprise plan pricing
 
 ------------------------------------------------------------
-📊 ANALYSIS RESULTS
+Primary Tag:   SALES
+Secondary Tag: BILLING
 ------------------------------------------------------------
-🥇 Primary Tag:   SALES
-🥈 Secondary Tag: OTHER
+
+Enter message: My application keeps crashing when I try to login
+
 ------------------------------------------------------------
+Primary Tag:   SUPPORT
+Secondary Tag: OTHER
+------------------------------------------------------------
+
+Enter message: I was charged twice this month
+
+------------------------------------------------------------
+Primary Tag:   BILLING
+Secondary Tag: SUPPORT
+------------------------------------------------------------
+
+Enter message: quit
+
+Thank you for using the Chat Message Tagger!
 ```
 
-### Test Mode
-Run predefined test cases for validation:
+## High-Level Implementation Details
 
-```bash
-python main.py --test
-```
+### Architecture
 
-### Custom Configuration File
-Use a different configuration file:
-
-```bash
-python main.py path/to/custom_config.json
-```
-
----
-
-## 🏗️ Architecture
-
-### High-Level Design
-
-```
-┌─────────────────────────────────────────────┐
-│        MessageTaggerApp (main.py)           │
-│         (CLI & Orchestration)               │
-└──────────────────┬──────────────────────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-┌───────▼────────┐   ┌────────▼─────────┐
-│ Configuration  │   │  Tagger Service  │
-│    Loader      │   │  (Core Logic)    │
-└───────┬────────┘   └────────┬─────────┘
-        │                     │
-        │            ┌────────▼─────────┐
-        │            │ Scoring Strategy │
-        │            │   (Algorithm)    │
-        │            └──────────────────┘
-        │
-┌───────▼────────┐
-│ tag_config.json│
-└────────────────┘
-```
-
-### Key Components
+The application follows a modular, object-oriented design with three main components:
 
 #### 1. ConfigurationLoader (`config_loader.py`)
-**Responsibility:** Load and validate tag configuration from JSON file
+
+**Purpose:** Loads and parses the tag configuration from `tag_config.json`.
 
 **Key Methods:**
-- `load_config()` - Reads and parses the JSON configuration
-- `validate_config()` - Ensures configuration is valid
-- `get_tags()` - Returns list of available tags
-- `get_keywords(tag)` - Returns keywords for a specific tag
+- `load_configuration()`: Reads the JSON file and validates the structure
+- `get_tags_config()`: Returns the complete tag-to-keywords mapping
+- `get_available_tags()`: Returns a list of all available tag names
 
-**Design Principle:** Single Responsibility - only handles configuration operations
+**Design Decisions:**
+- Validates configuration structure at load time
+- Converts all keywords to lowercase for case-insensitive matching
+- Raises descriptive errors if the configuration is invalid
 
----
+#### 2. TaggerService (`tagger_service.py`)
 
-#### 2. ScoringStrategy (`scoring_strategy.py`)
-**Responsibility:** Define scoring algorithm interface and implementations
-
-**Classes:**
-- `ScoringStrategy` (Abstract Base Class) - Defines the interface
-- `KeywordFrequencyScorer` - Counts keyword occurrences
-- `WeightedKeywordScorer` - Optional weighted scoring
+**Purpose:** Implements the core tagging logic using keyword frequency scoring.
 
 **Key Method:**
-- `calculate_score(message, keywords)` - Returns a score for how well a message matches keywords
+- `analyze_message(message_text)`: Analyzes a message and returns the top 2 tags
 
-**Design Principle:** Strategy Pattern - allows easy swapping of scoring algorithms
+**Scoring Algorithm:**
+1. **Normalization:** Convert message to lowercase
+2. **Tokenization:** Extract words from the message using regex
+3. **Scoring:** For each tag, count how many keywords appear in the message
+4. **Ranking:** Sort tags by score (highest first)
+5. **Selection:** Return the top 2 tags
 
----
+**Design Decisions:**
+- Uses simple keyword frequency counting (suitable for POC)
+- Handles multi-word keywords
+- Defaults to "OTHER" tag when no keywords match
+- Designed for easy extension to more sophisticated algorithms
 
-#### 3. TaggerService (`tagger_service.py`)
-**Responsibility:** Core business logic for message analysis
+#### 3. ApplicationRunner (`main.py`)
 
-**Key Methods:**
-- `analyze_message(message)` - Returns (primary_tag, secondary_tag)
-- `_score_all_tags(message)` - Calculates scores for all tags
-- `get_detailed_analysis(message)` - Returns detailed scoring information
-- `set_scoring_strategy(strategy)` - Changes scoring algorithm at runtime
-
-**Algorithm Flow:**
-1. Calculate score for each tag using the scoring strategy
-2. Sort tags by score (descending)
-3. Return top 2 tags with highest scores
-
-**Design Principle:** Dependency Injection - scoring strategy is injected, making it testable and extensible
-
----
-
-#### 4. MessageTaggerApp (`main.py`)
-**Responsibility:** Application orchestration and CLI interface
+**Purpose:** Orchestrates the application flow and provides the CLI interface.
 
 **Key Methods:**
-- `initialize()` - Sets up all components
-- `run()` - Main interactive loop
-- `_process_message(message)` - Processes a single message
-- `run_test_cases()` - Runs predefined test cases
+- `initialize()`: Sets up the configuration loader and tagger service
+- `run_interactive()`: Manages the interactive command-line loop
+- `run()`: Main entry point that coordinates initialization and execution
 
-**Design Principle:** Facade Pattern - provides a simple interface to the complex subsystem
+**Design Decisions:**
+- Separates initialization from runtime logic
+- Provides clear error messages
+- Supports graceful exit (quit/exit/Ctrl+C)
+- Displays results in a user-friendly format
 
----
+### Data Flow
 
-### Scoring Algorithm Explanation
-
-**Algorithm:** Keyword Frequency Count
-
-```python
-def calculate_score(message, keywords):
-    1. Normalize message to lowercase
-    2. Extract words using regex: \b\w+\b
-    3. For each keyword:
-       - Count exact word matches
-       - Add 0.5 points for substring matches (multi-word keywords)
-    4. Return total score
+```
+1. User Input → ApplicationRunner
+2. ApplicationRunner → TaggerService.analyze_message()
+3. TaggerService → Tokenizes and scores against ConfigurationLoader data
+4. TaggerService → Returns (primary_tag, secondary_tag)
+5. ApplicationRunner → Displays results to user
 ```
 
-**Example:**
-```
-Message: "I want to buy your product and see pricing"
-Keywords (SALES): ["buy", "purchase", "price", "pricing", "product"]
+## Acceptance Criteria & Test Cases
 
-Score calculation:
-- "buy" appears 1 time → +1 point
-- "product" appears 1 time → +1 point
-- "pricing" appears 1 time → +1 point
-Total Score: 3.0
-
-Keywords (OTHER): ["question", "info", "general"]
-- No matches → 0 points
-```
-
-**Why This Works:**
-- Simple and fast (O(n*m) where n = words, m = keywords)
-- Case-insensitive for user-friendliness
-- Handles both single-word and multi-word keywords
-- Deterministic ordering (alphabetical) for ties
-
----
-
-## ✅ Acceptance Criteria
+The following test cases demonstrate that the application meets the "Definition of Done":
 
 ### Test Case 1: Sales Inquiry
-**Input:**
+**Input Message:**
 ```
-"I want to buy your product and see pricing"
+"I'm interested in purchasing the enterprise plan. Can you provide a quote and pricing information?"
 ```
-**Expected Output:**
-- Primary Tag: `SALES`
-- Secondary Tag: `OTHER`
 
-**Rationale:** Contains "buy", "product", and "pricing" keywords strongly associated with SALES.
+**Expected Output:**
+- **Primary Tag:** SALES
+- **Secondary Tag:** BILLING
+
+**Rationale:** Keywords matched: "interested", "purchasing", "enterprise", "plan", "quote", "pricing" → Strong SALES signals with BILLING overlap due to pricing-related terms.
 
 ---
 
-### Test Case 2: Support Request
-**Input:**
+### Test Case 2: Technical Support Issue
+**Input Message:**
 ```
-"My account is broken and I need help now"
+"The application crashes every time I try to log in. Please help me fix this issue."
 ```
-**Expected Output:**
-- Primary Tag: `SUPPORT`
-- Secondary Tag: `OTHER`
 
-**Rationale:** Contains "broken" and "help" keywords strongly associated with SUPPORT.
+**Expected Output:**
+- **Primary Tag:** SUPPORT
+- **Secondary Tag:** OTHER
+
+**Rationale:** Keywords matched: "crashes", "help", "fix", "issue" → Clear SUPPORT indicators, OTHER as secondary due to general inquiry nature.
 
 ---
 
-### Test Case 3: Billing Question
-**Input:**
+### Test Case 3: Billing Concern
+**Input Message:**
 ```
-"Why was I charged twice on my invoice?"
+"I was charged twice on my credit card this month. My payment transaction appears broken and I need help with this billing issue."
 ```
-**Expected Output:**
-- Primary Tag: `BILLING`
-- Secondary Tag: `OTHER`
 
-**Rationale:** Contains "charged" and "invoice" keywords strongly associated with BILLING.
+**Expected Output:**
+- **Primary Tag:** BILLING
+- **Secondary Tag:** SUPPORT
+
+**Rationale:** Keywords matched: "charged", "credit card", "payment", "transaction", "billing" → Strong BILLING signals with SUPPORT overlap due to "help", "broken", "issue".
 
 ---
 
-### Running Test Cases
+### Running the Test Cases
 
-Execute the built-in test suite:
+To verify these test cases:
+
+1. Run the application: `python main.py`
+2. Enter each test message when prompted
+3. Verify the output matches the expected tags
+
+## Unit Testing
+
+The project includes a comprehensive unit test suite that validates all components of the application.
+
+### Test Coverage
+
+The unit tests cover:
+
+1. **ConfigurationLoader Tests** (`tests/test_config_loader.py`)
+   - Valid configuration loading
+   - Error handling (missing files, invalid JSON, malformed config)
+   - Keyword normalization (lowercase conversion)
+   - Edge cases (empty keywords, missing keys)
+
+2. **TaggerService Tests** (`tests/test_tagger_service.py`)
+   - Message analysis and tag assignment
+   - Keyword frequency scoring algorithm
+   - Case-insensitive matching
+   - Multi-word keyword support
+   - Edge cases (empty messages, no matches, punctuation handling)
+   - Internal method testing (tokenization, scoring, ranking)
+
+3. **ApplicationRunner Tests** (`tests/test_application_runner.py`)
+   - Initialization and error handling
+   - Interactive mode behavior
+   - User input handling (quit/exit commands, empty input)
+   - Exception handling (KeyboardInterrupt, EOFError)
+
+### Running Unit Tests
+
+Execute the unit test suite:
+
 ```bash
-python main.py --test
+python run_unittests.py
 ```
 
-Expected output:
+**Expected Output:**
 ```
-============================================================
-  RUNNING ACCEPTANCE TEST CASES
-============================================================
+======================================================================
+INTELLIGENT CHAT MESSAGE TAGGER - UNIT TEST RUNNER
+======================================================================
 
-Test Case #1
-Message: "I want to buy your product and see pricing"
-Expected: Primary=SALES, Secondary=OTHER
-Actual:   Primary=SALES, Secondary=OTHER
-✅ PASSED
-------------------------------------------------------------
+... (test execution output) ...
 
-Test Case #2
-Message: "My account is broken and I need help now"
-Expected: Primary=SUPPORT, Secondary=OTHER
-Actual:   Primary=SUPPORT, Secondary=OTHER
-✅ PASSED
-------------------------------------------------------------
+----------------------------------------------------------------------
+Ran 37 tests in 0.023s
 
-Test Case #3
-Message: "Why was I charged twice on my invoice?"
-Expected: Primary=BILLING, Secondary=OTHER
-Actual:   Primary=BILLING, Secondary=OTHER
-✅ PASSED
-------------------------------------------------------------
+OK
 
-Results: 3 passed, 0 failed out of 3 tests
+======================================================================
+UNIT TEST SUMMARY
+======================================================================
+Tests Run: 37
+Failures: 0
+Errors: 0
+Skipped: 0
+
+✓ All unit tests passed!
 ```
 
----
+### Running Individual Test Files
 
-## 🔧 Extensibility
+You can also run individual test files:
 
-### Adding New Tags
-Simply update `tag_config.json`:
-```json
-{
-  "tags": {
-    "SALES": { "keywords": [...] },
-    "SUPPORT": { "keywords": [...] },
-    "FEEDBACK": {
-      "keywords": ["feedback", "suggestion", "improve", "feature request"]
-    }
-  }
-}
+```bash
+# Test ConfigurationLoader only
+python -m unittest tests.test_config_loader
+
+# Test TaggerService only
+python -m unittest tests.test_tagger_service
+
+# Test ApplicationRunner only
+python -m unittest tests.test_application_runner
 ```
-No code changes required!
 
-### Implementing a New Scoring Strategy
+### Writing Additional Tests
 
-1. Create a new class inheriting from `ScoringStrategy`:
+To add new tests:
+
+1. Create a test file in the `tests/` directory following the naming convention `test_*.py`
+2. Import `unittest` and the module you want to test
+3. Create a test class inheriting from `unittest.TestCase`
+4. Write test methods starting with `test_`
+
+Example:
+
 ```python
-class TFIDFScorer(ScoringStrategy):
-    def calculate_score(self, message, keywords):
-        # Your algorithm here
-        return score
+import unittest
+from my_module import MyClass
+
+class TestMyClass(unittest.TestCase):
+    def test_my_feature(self):
+        obj = MyClass()
+        result = obj.my_method()
+        self.assertEqual(result, expected_value)
 ```
 
-2. Use it in the application:
-```python
-scorer = TFIDFScorer()
-tagger_service = TaggerService(tag_config, scorer)
-```
-
-### Adding More Output Formats
-Extend `MessageTaggerApp._process_message()` to support JSON, CSV, or other formats.
-
----
-
-## 🚀 Future Enhancements
-
-### Short-Term Improvements
-1. **Confidence Scores:** Return confidence percentages with tags
-2. **Multi-language Support:** Handle messages in different languages
-3. **Fuzzy Matching:** Handle typos and variations (e.g., "hlep" → "help")
-4. **Synonym Support:** Expand keywords with synonyms
-
-### Medium-Term Enhancements
-1. **TF-IDF Scoring:** Weight keywords by rarity across messages
-2. **Context Analysis:** Consider word proximity and sentence structure
-3. **API Interface:** REST API for integration with other systems
-4. **Batch Processing:** Analyze multiple messages from a file
-
-### Long-Term Vision
-1. **Machine Learning:** Train classifier on labeled data
-2. **Sentiment Analysis:** Factor in emotional tone
-3. **Entity Recognition:** Extract names, products, dates
-4. **Auto-learning:** Improve keyword lists based on feedback
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 intelligent-chat-tagger/
-├── README.md                 # This file
-├── tag_config.json          # Tag and keyword configuration
-├── main.py                  # Application entry point
-├── config_loader.py         # Configuration loading module
-├── tagger_service.py        # Core tagging logic
-├── scoring_strategy.py      # Scoring algorithm implementations
-└── .gitignore              # Git ignore file
+│
+├── main.py                      # Application entry point and CLI interface
+├── config_loader.py             # Configuration loading and parsing
+├── tagger_service.py            # Core tagging logic and scoring algorithm
+├── tag_config.json              # Tag definitions and keyword mappings
+├── test_runner.py               # Integration test runner
+├── run_unittests.py             # Unit test runner
+├── tests/                       # Unit test directory
+│   ├── __init__.py              # Test package initializer
+│   ├── test_config_loader.py    # ConfigurationLoader unit tests
+│   ├── test_tagger_service.py   # TaggerService unit tests
+│   └── test_application_runner.py  # ApplicationRunner unit tests
+├── README.md                    # This file
+└── .gitignore                   # Git ignore rules
 ```
 
+## Extensibility
+
+The modular design makes it easy to extend the application:
+
+### Adding New Tags
+
+Edit `tag_config.json` to add new tags with their keywords:
+
+```json
+{
+  "tags": {
+    "FEEDBACK": {
+      "keywords": ["feedback", "suggestion", "improvement", "feature request"]
+    }
+  }
+}
+```
+
+### Implementing Advanced Scoring
+
+The `TaggerService` class can be extended to support more sophisticated algorithms:
+
+```python
+class AdvancedTaggerService(TaggerService):
+    def _calculate_tag_scores(self, message_words):
+        # Implement weighted scoring, TF-IDF, or ML-based scoring
+        pass
+```
+
+### Adding New Output Formats
+
+The `ApplicationRunner` can be extended to support different output formats:
+
+```python
+def run_json_output(self):
+    # Output results as JSON instead of text
+    pass
+```
+
+### Integration Opportunities
+
+The core components can be integrated into:
+- Web APIs (Flask, FastAPI)
+- Chatbot systems
+- Customer support platforms
+- Message queue processors
+
+## License
+
+This is a Proof of Concept project for demonstration purposes.
+
 ---
 
-## 🤝 Contributing
-
-This is a POC project. For production use, consider:
-- Adding comprehensive unit tests
-- Implementing logging
-- Adding input validation and sanitization
-- Performance optimization for large keyword sets
-- Error recovery mechanisms
-
----
-
-## 📝 License
-
-This project is created as a proof-of-concept for technical assessment purposes.
-
----
-
-## 👤 Author
-
-KARABO LELAKA
-
----
-
-## 🙏 Acknowledgments
-
-- Built using Python 3 standard library
-- Follows SOLID principles and clean code practices
-- Designed for extensibility and maintainability
+**Author:** Karabo Lelaka  
+**Date:** October 2025
